@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict
 from enum import Enum
 
-from exception import NotFoundRole
+from exception import FailedPermission, NotFoundRole
 
 
 @dataclass(frozen=True)
@@ -21,6 +21,15 @@ class RoleEnum(str, Enum):
     MANAGER = "manager"
 
 
+class ActionEnum(str, Enum):
+    READ = "read"
+    UPDATE = "update"
+    CREATE = "create"
+    DELETE = "delete"
+    ALOWED = "*"
+    DENIED = "!"
+
+
 @dataclass(frozen=True)
 class Role:
     name: RoleEnum
@@ -30,7 +39,7 @@ class Role:
 @dataclass(frozen=True)
 class Permission:
     resource: str
-    action: str
+    action: ActionEnum
 
     @property
     def name(self) -> str:
@@ -40,23 +49,25 @@ class Permission:
 @dataclass(frozen=False)
 class AccessRule:
     """Role-Based Access Control"""
+
     access_rules: Dict[RoleEnum, Role] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.access_rules = {
             RoleEnum.GUEST: Role(RoleEnum.GUEST, [
-                Permission("*", "!"),
+                Permission("*", ActionEnum.DENIED),
+                Permission("posts", ActionEnum.READ),
                 # Permission("dashboard", "read")
             ]),
-            RoleEnum.ADMIN: Role(RoleEnum.ADMIN, [Permission("*", "*")]),
+            RoleEnum.ADMIN: Role(RoleEnum.ADMIN, [Permission("*", ActionEnum.ALOWED)]),
             RoleEnum.EMPLOYEE: Role(RoleEnum.EMPLOYEE, [
-                Permission("dashboard", "read"),
-                Permission("posts", "*"),
+                Permission("dashboard", ActionEnum.READ),
+                Permission("posts", ActionEnum.ALOWED),
             ]),
             RoleEnum.MANAGER: Role(RoleEnum.MANAGER, [
-                Permission("posts", "*"),
-                Permission("dashboard", "read"),
-                Permission("employee", "*")
+                Permission("posts", ActionEnum.ALOWED),
+                Permission("dashboard", ActionEnum.READ),
+                Permission("employee", ActionEnum.ALOWED)
             ]),
         }
     
@@ -68,13 +79,16 @@ class AccessRule:
             raise NotFoundRole(f"Not Found Role name with {role}")
         self.access_rules[role].permissions.append(permission)
 
-    def authorize(self, user: User, permission: str) -> bool:
+    def authorize(self, user: User, permission: str, log: bool = True) -> bool:
         access = False
+        resource, action = permission.split(":")
+        if not action in list(ActionEnum):
+            raise FailedPermission(f"Not defined `{action}`, you must use create, read, update, delete!")
         for access_rule in self.access_rules.values():
             if access_rule.name == user.role:
                 for perm in access_rule.permissions:
-                    resource, action = permission.split(":")
-                    print(permission, perm)
+                    if log:
+                        print(permission, perm)
                     if (resource == perm.resource or perm.resource == "*") and (action == perm.action or (perm.action == "*" and not perm.action == "!")):
                         access = True
                     if (resource == perm.resource and perm.action == "!"):
