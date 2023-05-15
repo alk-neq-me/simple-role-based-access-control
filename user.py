@@ -16,6 +16,12 @@ def main() -> None:
         role=RoleEnum.GUEST
     )
 
+    rose = User(
+        name="Rose",
+        email="j@j",
+        role=RoleEnum.GUEST
+    )
+
     johns_post = Post(
         title="John's first post",
         description="Should own post can delete!",
@@ -37,7 +43,9 @@ def main() -> None:
     print("John", "allowed" if john_db_update else "denied", "to update dashboard")
 
     rbac.authorize(
-        user=bob,  # user=bob //-> Error: Not Your post
+        # user=rose //-> ❌Error: Not Your post
+        # user=bob //-> ✔️
+        user=bob, 
         permission="posts:update",  # "posts:delete"  //-> Error: Not Allowed
         callback=johns_post.update
     )

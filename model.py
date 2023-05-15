@@ -27,15 +27,17 @@ class Post:
     def update(self, updated_by: User) -> None:
         """Impl delete Login here"""
         """Should allow to update post, even which is not admin's posts?"""
-        # if not self.user._id == updated_by._id:
-        #     raise Forbidden("This is Not your posts")
+        if not updated_by.role == RoleEnum.ADMIN:
+            if not self.user._id == updated_by._id:
+                raise Forbidden("This is Not your posts")
         print(f"{self.user.name}'s post is updated by {updated_by.name}")
 
     def delete(self, deleted_by: User) -> None:
         """Impl delete Login here"""
         """Should allow to delete post, even which is not admin's posts?"""
-        # if not self.user._id == deleted_by._id:
-        #     raise Forbidden("This is Not your posts")
+        if not deleted_by.role == RoleEnum.ADMIN:
+            if not self.user._id == deleted_by._id:
+                raise Forbidden("This is Not your posts")
         print(f"{self.user.name}'s post is deleted by {deleted_by.name}")
 
 
@@ -100,11 +102,6 @@ class AccessRule:
     
     def get_role(self, role: RoleEnum) -> Role:
         return self.access_rules.get(role, self.access_rules[RoleEnum.GUEST])
-
-    def add_access_rule(self, role: RoleEnum, permission: Permission) -> None:
-        if role not in self.access_rules:
-            raise NotFoundRole(f"Not Found Role name with {role}")
-        self.access_rules[role].permissions.append(permission)
 
     def authorize(
         self, 
