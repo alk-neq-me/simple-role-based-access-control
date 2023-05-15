@@ -37,7 +37,7 @@ def main() -> None:
     print("John", "allowed" if john_db_update else "denied", "to update dashboard")
 
     rbac.authorize(
-        user=john,  # user=bob //-> Error: Not Your post
+        user=bob,  # user=bob //-> Error: Not Your post
         permission="posts:update",  # "posts:delete"  //-> Error: Not Allowed
         callback=johns_post.update
     )

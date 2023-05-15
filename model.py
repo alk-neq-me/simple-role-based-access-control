@@ -26,15 +26,17 @@ class Post:
 
     def update(self, updated_by: User) -> None:
         """Impl delete Login here"""
-        if not self.user._id == updated_by._id:
-            raise Forbidden("This is Not your posts")
-        print(f"post is updated by {updated_by.name}")
+        """Should allow to update post, even which is not admin's posts?"""
+        # if not self.user._id == updated_by._id:
+        #     raise Forbidden("This is Not your posts")
+        print(f"{self.user.name}'s post is updated by {updated_by.name}")
 
     def delete(self, deleted_by: User) -> None:
         """Impl delete Login here"""
-        if not self.user._id == deleted_by._id:
-            raise Forbidden("This is Not your posts")
-        print(f"post is deleted by {deleted_by.name}")
+        """Should allow to delete post, even which is not admin's posts?"""
+        # if not self.user._id == deleted_by._id:
+        #     raise Forbidden("This is Not your posts")
+        print(f"{self.user.name}'s post is deleted by {deleted_by.name}")
 
 
 class RoleEnum(str, Enum):
