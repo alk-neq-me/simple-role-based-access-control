@@ -1,17 +1,40 @@
 from __future__ import annotations
+from collections.abc import Callable
 
 from dataclasses import dataclass, field
 from typing import List, Dict
+from uuid import uuid1, UUID
 from enum import Enum
 
-from exception import FailedPermission, NotFoundRole
+from exception import FailedPermission, Forbidden, NotFoundRole
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class User:
+    _id: UUID = field(default_factory=uuid1, init=False)
     name: str
     email: str
     role: RoleEnum
+
+
+@dataclass(frozen=False)
+class Post:
+    _id: UUID = field(default_factory=uuid1, init=False)
+    user: User
+    title: str
+    description: str
+
+    def update(self, updated_by: User) -> None:
+        """Impl delete Login here"""
+        if not self.user._id == updated_by._id:
+            raise Forbidden("This is Not your posts")
+        print(f"post is updated by {updated_by.name}")
+
+    def delete(self, deleted_by: User) -> None:
+        """Impl delete Login here"""
+        if not self.user._id == deleted_by._id:
+            raise Forbidden("This is Not your posts")
+        print(f"post is deleted by {deleted_by.name}")
 
 
 class RoleEnum(str, Enum):
@@ -57,6 +80,8 @@ class AccessRule:
             RoleEnum.GUEST: Role(RoleEnum.GUEST, [
                 Permission("*", ActionEnum.DENIED),
                 Permission("posts", ActionEnum.READ),
+                Permission("posts", ActionEnum.UPDATE),
+                # Permission("posts", ActionEnum.DELETE),
                 # Permission("dashboard", "read")
             ]),
             RoleEnum.ADMIN: Role(RoleEnum.ADMIN, [Permission("*", ActionEnum.ALOWED)]),
@@ -79,7 +104,13 @@ class AccessRule:
             raise NotFoundRole(f"Not Found Role name with {role}")
         self.access_rules[role].permissions.append(permission)
 
-    def authorize(self, user: User, permission: str, log: bool = True) -> bool:
+    def authorize(
+        self, 
+        user: User, 
+        permission: str, 
+        log: bool = False,
+        callback: Callable[[User], None] | None = None
+    ) -> bool:
         access = False
         resource, action = permission.split(":")
         if not action in list(ActionEnum):
@@ -93,4 +124,8 @@ class AccessRule:
                         access = True
                     if (resource == perm.resource and perm.action == "!"):
                         access = False
+        if access and callback:
+            callback(user)
+        if not access and callback:
+            raise Forbidden("403 Not Allowed")
         return access
