@@ -45,7 +45,7 @@ def main() -> None:
     rbac.authorize(
         # user=rose //-> ❌Error: Not Your post
         # user=bob //-> ✔️
-        user=bob, 
+        user=john, 
         permission="posts:update",  # "posts:delete"  //-> Error: Not Allowed
         callback=johns_post.update
     )
