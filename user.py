@@ -48,12 +48,14 @@ def main() -> None:
     print("John", "allowed" if john_db_update else "denied", "to update dashboard")
 
     rbac.authorize(
+        log=True,
         user=john,
         permission="posts:create",
         callback=post_repo.create(johns_post)
     )
 
     rbac.authorize(
+        log=False,
         # user=rose //-> ❌Error: Not Your post
         # user=bob //-> ✔️  Admin can update, delete
         user=bob, 
