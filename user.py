@@ -1,4 +1,6 @@
-from model import AccessRule, Post, RoleEnum, User
+from rbac.security import AccessRule
+from rbac.models import RoleEnum, User, Post
+from rbac.repository import PostRepository
 
 
 def main() -> None:
@@ -19,7 +21,7 @@ def main() -> None:
     rose = User(
         name="Rose",
         email="j@j",
-        role=RoleEnum.GUEST
+        role=RoleEnum.EMPLOYEE
     )
 
     johns_post = Post(
@@ -28,26 +30,41 @@ def main() -> None:
         user=john
     )
 
+    post_repo = PostRepository()
+
 
     bob_db_update = rbac.authorize(
-        user=bob, permission="dashboard:update"
+        user=bob, 
+        permission="dashboard:update"
     )
 
     john_db_update = rbac.authorize(
-        user=john, permission="dashboard:update"
+        user=john, 
+        permission="dashboard:update"
     )
-
 
     print()
     print("Bob", "allowed" if bob_db_update else "denied", "to update dashboard")
     print("John", "allowed" if john_db_update else "denied", "to update dashboard")
 
     rbac.authorize(
+        user=john,
+        permission="posts:create",
+        callback=post_repo.create(johns_post)
+    )
+
+    rbac.authorize(
         # user=rose //-> ❌Error: Not Your post
-        # user=bob //-> ✔️
-        user=john, 
+        # user=bob //-> ✔️  Admin can update, delete
+        user=bob, 
         permission="posts:update",  # "posts:delete"  //-> Error: Not Allowed
-        callback=johns_post.update
+        callback=post_repo.update(
+            id=johns_post.id,
+            payload=Post(**{
+                **johns_post.__dict__, 
+                "description": "updated"
+            })
+        )
     )
 
 

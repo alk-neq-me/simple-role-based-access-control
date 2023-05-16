@@ -1,51 +1,11 @@
 from __future__ import annotations
-from collections.abc import Callable
 
 from dataclasses import dataclass, field
-from typing import List, Dict
-from uuid import uuid1, UUID
+from typing import List, Dict, Callable
 from enum import Enum
 
-from exception import FailedPermission, Forbidden, NotFoundRole
-
-
-@dataclass(frozen=False)
-class User:
-    _id: UUID = field(default_factory=uuid1, init=False)
-    name: str
-    email: str
-    role: RoleEnum
-
-
-@dataclass(frozen=False)
-class Post:
-    _id: UUID = field(default_factory=uuid1, init=False)
-    user: User
-    title: str
-    description: str
-
-    def update(self, updated_by: User) -> None:
-        """Impl delete Login here"""
-        """Should allow to update post, even which is not admin's posts?"""
-        if not updated_by.role == RoleEnum.ADMIN:
-            if not self.user._id == updated_by._id:
-                raise Forbidden("This is Not your posts")
-        print(f"{self.user.name}'s post is updated by {updated_by.name}")
-
-    def delete(self, deleted_by: User) -> None:
-        """Impl delete Login here"""
-        """Should allow to delete post, even which is not admin's posts?"""
-        if not deleted_by.role == RoleEnum.ADMIN:
-            if not self.user._id == deleted_by._id:
-                raise Forbidden("This is Not your posts")
-        print(f"{self.user.name}'s post is deleted by {deleted_by.name}")
-
-
-class RoleEnum(str, Enum):
-    GUEST = "guest"
-    ADMIN = "admin"
-    EMPLOYEE = "employee"
-    MANAGER = "manager"
+from .exception import FailedPermission, Forbidden
+from .models import RoleEnum, User
 
 
 class ActionEnum(str, Enum):
@@ -82,10 +42,10 @@ class AccessRule:
     def __post_init__(self) -> None:
         self.access_rules = {
             RoleEnum.GUEST: Role(RoleEnum.GUEST, [
-                Permission("*", ActionEnum.DENIED),
+                Permission("*", ActionEnum.DENIED),  #  actually, it not need
                 Permission("posts", ActionEnum.READ),
                 Permission("posts", ActionEnum.UPDATE),
-                # Permission("posts", ActionEnum.DELETE),
+                Permission("posts", ActionEnum.CREATE),
                 # Permission("dashboard", "read")
             ]),
             RoleEnum.ADMIN: Role(RoleEnum.ADMIN, [Permission("*", ActionEnum.ALOWED)]),
@@ -123,6 +83,7 @@ class AccessRule:
                         access = True
                     if (resource == perm.resource and perm.action == "!"):
                         access = False
+        # if ACCESS, run callback
         if access and callback:
             callback(user)
         if not access and callback:
