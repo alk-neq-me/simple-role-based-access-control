@@ -48,7 +48,7 @@ function log_perms(rules: Map<RoleEnum, Role>, role: RoleEnum) {
   if (!current_rule) throw new Error("Not Found Role name");
 
   for (const perm of current_rule?.permissions) {
-    console.log("[ Permission ]", perm);
+    console.log(`[ ${current_rule.name} ]`, perm.name);
   }
 }
 
@@ -66,23 +66,21 @@ class AccessRule {
       name: "guest", 
       permissions: [
         new Permission("post", "read"),
+        new Permission("dashboard", "read"),
       ]
     }]
   ]);
 
-  authorize<U extends { role: RoleEnum }>(user: U, permission: string) {
+  authorize<U extends { role: RoleEnum }>(user: U, perm: string) {
     let access: boolean = false;
-    const [resource, action] = permission.split(":");
+    const [resource] = perm.split(":");
 
     log_perms(this.access_rules, user.role);
   
     for (const access_rule of this.access_rules.values()) {
       if (access_rule.name === user.role) {
         for (const permission of access_rule.permissions) {
-          if (
-            (resource == permission.resource || permission.resource === "*") 
-              && (permission.action === action || permission.action === "*")
-          ) {
+          if ((perm === permission.name) || ((permission.resource === resource || permission.resource === "*") && permission.action === "*")) {
             access = true
           }
           if (resource == permission.resource && permission.action === "!") {
@@ -114,6 +112,8 @@ function main() {
 
   const guest_post_read_perm = rbac.authorize(anonymous, "post:read");
   const guest_dashboard_edit_perm = rbac.authorize(anonymous, "dashboard:edit");
+
+  console.log("\n");
 
   console.log({ admin_dashboard_edit_perm });
   console.log({ guest_post_read_perm });
