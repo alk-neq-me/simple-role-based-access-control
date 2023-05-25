@@ -120,4 +120,29 @@ function main() {
 }
 
 
+// // Middleware
+// /* validate function */
+
+// const authorize = (perm: string) => (req: Request, res: Response, next: NextFunction) => {
+//   const rbac = new AccessRule();
+//   
+//   /* get token and deserialize user */
+//   const user: User = { name: "bob", role: "admin" }; /* deserialized user */
+
+//   if (rbac.authorize(user, perm)) {
+//     next();
+//   }
+// }
+
+// // Router
+// router.post("/post", validate(), createPost);
+
+// // Controller
+// const createPost = async (
+//   req: Request, 
+//   res: Response, 
+//   next: NextFunction) => {
+//   /* Controller */
+// };
+
 main()
