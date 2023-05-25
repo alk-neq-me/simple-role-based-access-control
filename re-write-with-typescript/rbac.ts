@@ -74,19 +74,18 @@ class AccessRule {
   authorize<U extends { role: RoleEnum }>(user: U, perm: string) {
     let access: boolean = false;
     const [resource] = perm.split(":");
+    const current_rule = this.access_rules.get(user.role);
+
+    if (!current_rule) throw new Error("not found role name");
 
     log_perms(this.access_rules, user.role);
-  
-    for (const access_rule of this.access_rules.values()) {
-      if (access_rule.name === user.role) {
-        for (const permission of access_rule.permissions) {
-          if ((perm === permission.name) || ((permission.resource === resource || permission.resource === "*") && permission.action === "*")) {
-            access = true
-          }
-          if (resource == permission.resource && permission.action === "!") {
-            access = false
-          }
-        }
+
+    for (const permission of current_rule.permissions) {
+      if ((perm === permission.name) || ((permission.resource === resource || permission.resource === "*") && permission.action === "*")) {
+        access = true
+      }
+      if (resource == permission.resource && permission.action === "!") {
+        access = false
       }
     }
 
