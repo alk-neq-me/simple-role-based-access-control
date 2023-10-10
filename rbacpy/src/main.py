@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 import logging
 
+from common import Action, Role
+from permissions.dashboard import DashboardPermission
+from rbac import Rbac
 
-@dataclass(frozen=True)
-class User:
-    name: str
-    role: Role
+
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     )
     rbac = Rbac()
 
-    user = User(name="bob", role=Role.GUEST)
+    user = User()
 
     is_allowed = rbac.is_authorized(
         permission=DashboardPermission(), 

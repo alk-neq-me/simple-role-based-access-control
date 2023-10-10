@@ -1,3 +1,9 @@
+from dataclasses import dataclass
+from typing import List
+
+from common import Permission, Role
+
+
 @dataclass(frozen=True)
 class DashboardPermission(Permission):
     def create_allowed_roles(self) -> List[Role]:

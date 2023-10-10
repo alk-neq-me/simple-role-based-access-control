@@ -1,9 +1,12 @@
 from dataclasses import dataclass
+import logging
 from typing import List
+
+from common import Action, Authoritor, Permission, Role
 
 
 @dataclass(frozen=True)
-class Rbac(Authoritor):
+class RoleBasedAccess(Authoritor):
     def is_authorized(self, permission: Permission, role: Role, action: Action) -> bool:
         access = False
         perm: List[Role] = []
