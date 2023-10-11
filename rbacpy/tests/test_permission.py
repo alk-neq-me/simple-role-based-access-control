@@ -1,15 +1,33 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
+from typing import List
 from unittest import TestCase
+from common import Permission
 
 from rbac import RoleBasedAccess, Action
-from permissions.dashboard import DashboardPermission
+
+
+class DashboardPermission(Permission):
+    def create_allowed_roles(self) -> List[MockEnum]:
+        return [MockEnum.Admin, MockEnum.User]
+
+    def read_allowed_roles(self) -> List[MockEnum]:
+        return [MockEnum.All]
+
+    def update_allowed_roles(self) -> List[MockEnum]:
+        return [MockEnum.Admin, MockEnum.User]
+
+    def delete_allowed_roles(self) -> List[MockEnum]:
+        return [MockEnum.Admin]
 
 
 class MockEnum(str, Enum):
     Admin = "admin"
     User = "user"
     Guest = "guest"
+    All = "*"
 
 
 @dataclass(frozen=True)
@@ -20,7 +38,7 @@ class MockUser:
 
 class TestPermission(TestCase):
     def test_admin_create_dashboard(self):
-        rbac = RoleBasedAccess()
+        rbac = RoleBasedAccess[MockEnum]()
         bob = MockUser(name="bob", role=MockEnum.Admin)
 
         is_allowed = rbac.is_authorized(permission=DashboardPermission(), role=bob.role, action=Action.CREATE)
@@ -28,7 +46,7 @@ class TestPermission(TestCase):
         self.assertEqual(is_allowed, True)
 
     def test_guest_read_dashboard(self):
-        rbac = RoleBasedAccess()
+        rbac = RoleBasedAccess[MockEnum]()
         bob = MockUser(name="bob", role=MockEnum.Guest)
 
         is_allowed = rbac.is_authorized(permission=DashboardPermission(), role=bob.role, action=Action.READ)

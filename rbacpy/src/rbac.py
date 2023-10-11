@@ -1,15 +1,15 @@
 import logging
 from dataclasses import dataclass
-from typing import List
+from typing import Generic, List
 
-from common import Action, Authoritor, Permission
+from common import Action, Authoritor, Permission, Role
 
 
 @dataclass(frozen=True)
-class RoleBasedAccess(Authoritor):
-    def is_authorized(self, permission: Permission, role: str, action: Action) -> bool:
+class RoleBasedAccess(Generic[Role], Authoritor[Role]):
+    def is_authorized(self, permission: Permission[Role], role: Role, action: Action) -> bool:
         access = False
-        perm: List[str] = []
+        perm: List[Role] = []
 
         match action:
             case Action.CREATE:
