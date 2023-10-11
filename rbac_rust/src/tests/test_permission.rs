@@ -79,5 +79,23 @@ mod tests {
         let is_allowed = rbac.is_authenticated(&DashboardPermission, &bob.role, &Action::Read);
         assert_eq!(is_allowed, true);
     }
+
+    #[test]
+    fn test_user_dashboard_delete() {
+        let rbac = RoleBasedAccess;
+        let bob = MockUser::new("Bob", MockRole::User);
+
+        let is_allowed = rbac.is_authenticated(&DashboardPermission, &bob.role, &Action::Delete);
+        assert_eq!(is_allowed, false);
+    }
+
+    #[test]
+    fn test_user_dashboard_read() {
+        let rbac = RoleBasedAccess;
+        let bob = MockUser::new("Bob", MockRole::User);
+
+        let is_allowed = rbac.is_authenticated(&DashboardPermission, &bob.role, &Action::Read);
+        assert_eq!(is_allowed, true);
+    }
 }
 
