@@ -1,21 +1,21 @@
-use crate::common::{Permission, Role};
+use crate::common::Permission;
 
 pub struct DashboardPermission;
 
 impl Permission for DashboardPermission {
-    fn create_allowed_roles(&self) -> Vec<Role> {
-        vec![Role::Admin, Role::User]
+    fn create_allowed_roles(&self) -> Vec<&str> {
+        vec!["admin", "user"]
     }
 
-    fn read_allowed_roles(&self) -> Vec<Role> {
-        vec![Role::All]
+    fn read_allowed_roles(&self) -> Vec<&str> {
+        vec!["*"]
     }
 
-    fn update_allowed_roles(&self) -> Vec<Role> {
-        vec![Role::Admin, Role::User]
+    fn update_allowed_roles(&self) -> Vec<&str> {
+        vec!["admin", "user"]
     }
 
-    fn delete_allowed_roles(&self) -> Vec<Role> {
-        vec![Role::Admin]
+    fn delete_allowed_roles(&self) -> Vec<&str> {
+        vec!["admin"]
     }
 }
