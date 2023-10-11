@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::common::{Action, Authenticator, Permission};
-    use crate::rbac::RoleBasedAccess;
+    use rbac_rust::{common::{Permission, Authenticator, Action}, rbac::RoleBasedAccess};
 
     struct DashboardPermission;
 
