@@ -2,14 +2,10 @@ use crate::common::{Authenticator, Permission, Action};
 
 pub struct RoleBasedAccess;
 
-impl<R> Authenticator<R> for RoleBasedAccess
-where
-    R: ToString
-{
-    fn is_authenticated<T: Permission>(&self, permission: T, role: R, action: Action) -> bool {
+impl Authenticator for RoleBasedAccess {
+    fn is_authenticated<T: Permission>(&self, permission: &T, role: &T::Role, action: &Action) -> bool {
         let mut access = false;
-        let mut perms: Vec<&str> = vec![];
-        let role = role.to_string();
+        let mut perms: Vec<T::Role> = vec![];
 
         match action {
             Action::Create => {
@@ -26,9 +22,7 @@ where
             },
         }
 
-        if perms.contains(&"*") {
-            access = true;
-        } else if perms.contains(&role.as_str()) {
+        if perms.contains(&role) {
             access = true;
         }
 

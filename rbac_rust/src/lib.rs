@@ -1,25 +1,38 @@
 pub mod common;
 pub mod rbac;
-pub mod permissions;
 
 #[cfg(test)]
 mod tests {
-    use crate::common::{Action, Authenticator};
-    use crate::permissions::dashboard::DashboardPermission;
+    use crate::common::{Action, Authenticator, Permission};
     use crate::rbac::RoleBasedAccess;
 
-    pub enum MockRole {
-        Admin,
-        Guest
+    struct DashboardPermission;
+
+    impl Permission for DashboardPermission {
+        type Role = MockRole;
+
+        fn create_allowed_roles(&self) -> Vec<Self::Role> {
+            vec![MockRole::Admin]
+        }
+
+        fn read_allowed_roles(&self) -> Vec<Self::Role> {
+            vec![MockRole::Admin, MockRole::User, MockRole::Guest]
+        }
+
+        fn update_allowed_roles(&self) -> Vec<Self::Role> {
+            vec![MockRole::Admin, MockRole::User]
+        }
+
+        fn delete_allowed_roles(&self) -> Vec<Self::Role> {
+            vec![MockRole::Admin]
+        }
     }
 
-    impl ToString for MockRole {
-        fn to_string(&self) -> String {
-            match self {
-                MockRole::Admin => format!("admin"),
-                MockRole::Guest => format!("guest"),
-            }
-        }
+    #[derive(PartialEq)]
+    enum MockRole {
+        Admin,
+        User,
+        Guest,
     }
 
     struct MockUser<'a> {
@@ -39,7 +52,7 @@ mod tests {
         let rbac = RoleBasedAccess;
         let bob = MockUser::new("Bob", MockRole::Admin);
 
-        let is_allowed = rbac.is_authenticated(DashboardPermission, bob.role, Action::Create);
+        let is_allowed = rbac.is_authenticated(&DashboardPermission, &bob.role, &Action::Create);
         assert_eq!(is_allowed, true);
     }
 
@@ -48,7 +61,7 @@ mod tests {
         let rbac = RoleBasedAccess;
         let bob = MockUser::new("Bob", MockRole::Admin);
 
-        let is_allowed = rbac.is_authenticated(DashboardPermission, bob.role, Action::Read);
+        let is_allowed = rbac.is_authenticated(&DashboardPermission, &bob.role, &Action::Read);
         assert_eq!(is_allowed, true);
     }
 
@@ -57,7 +70,7 @@ mod tests {
         let rbac = RoleBasedAccess;
         let bob = MockUser::new("Bob", MockRole::Guest);
 
-        let is_allowed = rbac.is_authenticated(DashboardPermission, bob.role, Action::Create);
+        let is_allowed = rbac.is_authenticated(&DashboardPermission, &bob.role, &Action::Create);
         assert_eq!(is_allowed, false);
     }
 
@@ -66,7 +79,7 @@ mod tests {
         let rbac = RoleBasedAccess;
         let bob = MockUser::new("Bob", MockRole::Guest);
 
-        let is_allowed = rbac.is_authenticated(DashboardPermission, bob.role, Action::Read);
+        let is_allowed = rbac.is_authenticated(&DashboardPermission, &bob.role, &Action::Read);
         assert_eq!(is_allowed, true);
     }
 }
