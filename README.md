@@ -32,6 +32,19 @@ To use the Python version, follow these steps:
        Guest = "guest"
        All = "*"
 
+   class DashboardPermission(Permission):
+        def create_allowed_roles(self) -> List[Enum]:
+            return [Enum.Admin, Enum.User]
+
+        def read_allowed_roles(self) -> List[Enum]:
+            return [Enum.All]
+
+        def update_allowed_roles(self) -> List[Enum]:
+            return [Enum.Admin, Enum.User]
+
+        def delete_allowed_roles(self) -> List[Enum]:
+            return [Enum.Admin]
+
    @dataclass(frozen=True)
    class MockUser:
        name: str
