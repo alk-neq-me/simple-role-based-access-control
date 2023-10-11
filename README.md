@@ -15,7 +15,7 @@ To use the Python version, follow these steps:
 1. Install the RBAC package from this GitHub repository:
 
    ```bash
-   pip install git+https://github.com/alk-neq-me/simple-role-based-access-control.git
+   git clone https://github.com/alk-neq-me/simple-role-based-access-control.git
    ```
 
 2. Use the RBAC system in your code:
@@ -24,6 +24,13 @@ To use the Python version, follow these steps:
    from dataclasses import dataclass
    from rbac import RoleBasedAccess, Role, Action
    from permissions.dashboard import DashboardPermission
+   from enum import Enum
+
+   class Role(str, Enum):
+       Admin = "admin"
+       User = "user"
+       Guest = "guest"
+       All = "*"
 
    @dataclass(frozen=True)
    class MockUser:
@@ -31,9 +38,10 @@ To use the Python version, follow these steps:
        role: Role
 
    # Example usage:
-   rbac = RoleBasedAccess()
+   rbac = RoleBasedAccess[Role]()  #  type safe
    bob = MockUser(name="bob", role=Role.ADMIN)
 
+   # type-safe role: Role, Permission[Role]
    is_allowed = rbac.is_authorized(permission=DashboardPermission(), role=bob.role, action=Action.CREATE)
 
    assert is_allowed == True
@@ -61,34 +69,61 @@ To use the Rust version, follow these steps:
 2. Use the RBAC system in your code:
 
    ```rust
-   #[cfg(test)]
-   mod tests {
-       use rbac::common::{Role, Action, Authenticator};
-       use rbac::permissions::dashboard::DashboardPermission;
-       use rbac::rbac::RoleBasedAccess;
+    #[cfg(test)]
+    mod tests {
+        use crate::common::{Action, Authenticator, Permission};
+        use crate::rbac::RoleBasedAccess;
 
-       struct MockUser<'a> {
-           #[allow(unused)]
-           name: &'a str,
-           role: Role
-       }
+        struct DashboardPermission;
 
-       impl<'a> MockUser<'a> {
-           fn new(name: &'a str, role: Role) -> MockUser {
-               MockUser { name, role }
-           }
-       }
+        impl Permission for DashboardPermission {
+            type Role = MockRole;
 
-       #[test]
-       fn it_works() {
-           let rbac = RoleBasedAccess;
-           let bob = MockUser::new("Bob", Role::Guest);
+            fn create_allowed_roles(&self) -> Vec<Self::Role> {
+                vec![MockRole::Admin]
+            }
 
-           let is_allowed = rbac.is_authenticated(DashboardPermission, bob.role, Action::Read);
+            fn read_allowed_roles(&self) -> Vec<Self::Role> {
+                vec![MockRole::Admin, MockRole::User, MockRole::Guest]
+            }
 
-           assert_eq!(is_allowed, true);
-       }
-   }
+            fn update_allowed_roles(&self) -> Vec<Self::Role> {
+                vec![MockRole::Admin, MockRole::User]
+            }
+
+            fn delete_allowed_roles(&self) -> Vec<Self::Role> {
+                vec![MockRole::Admin]
+            }
+        }
+
+        #[derive(PartialEq)]
+        enum MockRole {
+            Admin,
+            User,
+            Guest,
+        }
+
+        struct MockUser<'a> {
+            #[allow(unused)]
+            name: &'a str,
+            role: MockRole
+        }
+
+        impl<'a> MockUser<'a> {
+            fn new(name: &'a str, role: MockRole) -> MockUser {
+                MockUser { name, role }
+            }
+        }
+
+        #[test]
+        fn test_admin_dashboard_create() {
+            let rbac = RoleBasedAccess;
+            let bob = MockUser::new("Bob", MockRole::Admin);
+
+            let is_allowed = rbac.is_authenticated(&DashboardPermission, &bob.role, &Action::Create);
+            assert_eq!(is_allowed, true);
+        }
+    }
    ```
 
 3. Replace `rbac::permissions::dashboard::DashboardPermission` with your custom permissions as needed.
