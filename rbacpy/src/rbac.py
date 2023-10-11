@@ -1,13 +1,13 @@
-from dataclasses import dataclass
 import logging
-from typing import List
+from dataclasses import dataclass
+from typing import Generic, List
 
 from common import Action, Authoritor, Permission, Role
 
 
 @dataclass(frozen=True)
-class RoleBasedAccess(Authoritor):
-    def is_authorized(self, permission: Permission, role: Role, action: Action) -> bool:
+class RoleBasedAccess(Generic[Role], Authoritor[Role]):
+    def is_authorized(self, permission: Permission[Role], role: Role, action: Action) -> bool:
         access = False
         perm: List[Role] = []
 
@@ -29,7 +29,7 @@ class RoleBasedAccess(Authoritor):
 
         logging.info(f"{perm = }")
 
-        if Role.ALL in perm:
+        if "*" in perm:
             access = True
         elif role in perm:
             access = True

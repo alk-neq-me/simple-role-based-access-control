@@ -1,11 +1,11 @@
-use crate::common::{Authenticator, Role, Permission, Action};
+use crate::common::{Authenticator, Permission, Action};
 
 pub struct RoleBasedAccess;
 
 impl Authenticator for RoleBasedAccess {
-    fn is_authenticated<T: Permission>(&self, permission: T, role: Role, action: Action) -> bool {
+    fn is_authenticated<T: Permission>(&self, permission: &T, role: &T::Role, action: &Action) -> bool {
         let mut access = false;
-        let mut perms: Vec<Role> = vec![];
+        let mut perms: Vec<T::Role> = vec![];
 
         match action {
             Action::Create => {
@@ -22,9 +22,7 @@ impl Authenticator for RoleBasedAccess {
             },
         }
 
-        if perms.contains(&Role::All) {
-            access = true;
-        } else if perms.contains(&role) {
+        if perms.contains(&role) {
             access = true;
         }
 
