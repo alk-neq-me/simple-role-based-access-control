@@ -1,4 +1,7 @@
 # Simple Role-Based Access Control (RBAC) System
+[![Rust Test](https://github.com/alk-neq-me/simple-role-based-access-control/actions/workflows/rust_test.yml/badge.svg)](https://github.com/alk-neq-me/simple-role-based-access-control/actions/workflows/rust_test.yml)
+[![Python Test](https://github.com/alk-neq-me/simple-role-based-access-control/actions/workflows/python_test.yml/badge.svg)](https://github.com/alk-neq-me/simple-role-based-access-control/actions/workflows/python_test.yml)
+[![License](https://img.shields.io/github/license/alk-neq-me/simple-role-based-access-control)](https://github.com/alk-neq-me/simple-role-based-access-control/blob/main/LICENSE)
 
 This project is a simple implementation of a Role-Based Access Control (RBAC) system in Python and Rust.
 
